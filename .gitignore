@@ -1,0 +1,24 @@
+# ---- Java / Maven ----
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# ---- IDE ----
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# ---- Node / UniApp ----
+node_modules/
+dist/
+unpackage/
+.hbuilderx/
+
+# ---- 日志 ----
+logs/
+*.log
+
+# ---- 本地配置（不要提交真实密码）----
+application-local.yml
