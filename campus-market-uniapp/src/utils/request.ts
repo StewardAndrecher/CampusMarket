@@ -24,6 +24,15 @@ export function request<T>(options: {
           : {}),
       },
       success: (res) => {
+        // 未登录/登录过期 → 清登录态并跳登录页
+        if (res.statusCode === 401) {
+          uni.removeStorageSync('campus_token')
+          uni.removeStorageSync('campus_user')
+          uni.showToast({ title: '请先登录', icon: 'none' })
+          setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 600)
+          reject(new Error('未登录'))
+          return
+        }
         const result = res.data as ApiResult<T>
         // 关键：判断业务 code，而不是 HTTP 状态码
         if (result && result.code === 200) {

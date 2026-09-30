@@ -1,0 +1,99 @@
+-- CampusMarket 数据库初始化脚本
+CREATE DATABASE IF NOT EXISTS campus_market DEFAULT CHARSET utf8mb4;
+USE campus_market;
+
+CREATE TABLE IF NOT EXISTS user (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  nickname VARCHAR(50),
+  avatar VARCHAR(255),
+  phone VARCHAR(20),
+  school_id BIGINT,
+  campus_verified TINYINT DEFAULT 0,
+  status TINYINT DEFAULT 1,
+  role TINYINT DEFAULT 0,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS category (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
+  sort INT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS product (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  seller_id BIGINT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2) NOT NULL,
+  original_price DECIMAL(10,2),
+  category_id BIGINT,
+  `condition` TINYINT DEFAULT 1,
+  location VARCHAR(100),
+  status TINYINT DEFAULT 1 COMMENT '0锁定 1在售 2已售 3下架',
+  audit_status TINYINT DEFAULT 1,
+  view_count INT DEFAULT 0,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS product_image (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  product_id BIGINT NOT NULL,
+  url VARCHAR(255) NOT NULL,
+  sort INT DEFAULT 0,
+  KEY idx_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  order_no VARCHAR(64) NOT NULL UNIQUE,
+  product_id BIGINT NOT NULL,
+  product_title VARCHAR(100),
+  product_cover VARCHAR(255),
+  price DECIMAL(10,2),
+  buyer_id BIGINT NOT NULL,
+  seller_id BIGINT NOT NULL,
+  status TINYINT DEFAULT 0 COMMENT '0待付款 1待交付 2已完成 3已取消',
+  trade_location VARCHAR(100),
+  remark VARCHAR(500),
+  pay_time DATETIME,
+  finish_time DATETIME,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS favorite (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_user_product (user_id, product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS conversation (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user1_id BIGINT NOT NULL,
+  user2_id BIGINT NOT NULL,
+  product_id BIGINT,
+  last_message VARCHAR(500),
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_pair (user1_id, user2_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS message (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  conversation_id BIGINT NOT NULL,
+  sender_id BIGINT NOT NULL,
+  content VARCHAR(1000),
+  type TINYINT DEFAULT 0,
+  is_read TINYINT DEFAULT 0,
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_conv (conversation_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 初始分类
+INSERT IGNORE INTO category (name, sort) VALUES
+('数码',1),('书籍',2),('生活用品',3),('服装',4),('运动',5),('乐器',6),('自行车',7),('其他',8);

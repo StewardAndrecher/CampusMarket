@@ -23,6 +23,7 @@ public class User {
     private Long schoolId;
     private Integer campusVerified;
     private Integer status;
+    private Integer role;  // 0普通用户 1管理员
     private LocalDateTime createTime;  // 数据库默认值自动填，不用 set
     private LocalDateTime updateTime;
 }
