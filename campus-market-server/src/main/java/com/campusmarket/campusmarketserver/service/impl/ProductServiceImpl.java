@@ -14,6 +14,7 @@ import com.campusmarket.campusmarketserver.mapper.UserMapper;
 import com.campusmarket.campusmarketserver.service.ProductService;
 import com.campusmarket.campusmarketserver.util.UserContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -27,6 +28,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final ProductImageMapper productImageMapper;
     private final UserMapper userMapper;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     @Transactional   // 商品 + 图片要么都成功，要么都回滚
@@ -84,11 +86,12 @@ public class ProductServiceImpl implements ProductService {
         if (product == null) {
             throw new BusinessException("商品不存在");
         }
-        // 浏览量 +1
-        product.setViewCount(product.getViewCount() == null ? 1 : product.getViewCount() + 1);
-        productMapper.updateById(product);
+        // 浏览量：Redis incr（高并发下不直接写DB，DB里的viewCount作为冷启动初始值）
+        Long viewCount = redisTemplate.opsForValue().increment("product:view:" + id);
+        if (viewCount == null) viewCount = 0L;
 
         ProductVO vo = toListItemVO(product);
+        vo.setViewCount(viewCount.intValue());
         // 全部图片（按 sort 排序）
         List<ProductImage> images = productImageMapper.selectList(
                 new LambdaQueryWrapper<ProductImage>()
